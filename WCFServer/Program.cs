@@ -20,9 +20,9 @@ namespace WCFServer
                 host.Open();
                 foreach (var serviceEndpoint in host.Description.Endpoints)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine(serviceEndpoint.Contract.ContractType.FullName);
-                    Console.WriteLine(serviceEndpoint.ListenUri.AbsoluteUri);
+                    Console.WriteLine("Endpoint:{0}", serviceEndpoint.ListenUri.AbsoluteUri);
+                    Console.WriteLine("ContractType:{0}", serviceEndpoint.Contract.ContractType.FullName);
+                    Console.WriteLine("-----------------------");
                 }
 
                 Console.WriteLine("Service Started");

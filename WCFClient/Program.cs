@@ -18,8 +18,20 @@ namespace WCFClient
             {
                 switch (Console.ReadKey(true).Key)
                 {
-                    case ConsoleKey.T:
+                    case ConsoleKey.A:
                         Send(_ => _.Add(1, 1));
+                        break;
+
+                    case ConsoleKey.D:
+                        Send(_ => _.Divide(6, 2));
+                        break;
+
+                    case ConsoleKey.M:
+                        Send(_ => _.Multiply(2, 2));
+                        break;
+
+                    case ConsoleKey.S:
+                        Send(_ => _.Subtract(1, 1));
                         break;
 
                     case ConsoleKey.Q:
