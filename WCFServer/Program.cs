@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
 using System.Text;
 using System.Threading;
@@ -15,9 +16,13 @@ namespace WCFServer
         {
             using (ServiceHost host = new ServiceHost(typeof(CalculatorService), new Uri(string.Format("{0}://{1}/{2}", Constants.Protocal, Constants.Url, Constants.Path))))
             {
-                var binding = new NetTcpBinding();
+                var binding = new NetTcpBinding(SecurityMode.Transport);
+                binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.None;
                 host.AddServiceEndpoint(typeof(ICalculator), binding, Constants.Address);
+                host.Credentials.ServiceCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindBySubjectName, "localhost");
+
                 host.Open();
+
                 foreach (var serviceEndpoint in host.Description.Endpoints)
                 {
                     Console.WriteLine("Endpoint:{0}", serviceEndpoint.ListenUri.AbsoluteUri);
