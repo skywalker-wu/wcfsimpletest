@@ -44,9 +44,11 @@ namespace WCFClient
 
         static double Send(Func<ICalculator, double> func)
         {
+            var binding = new NetTcpBinding(SecurityMode.Transport);
             Uri ServiceUri = new Uri(string.Format("{0}://{1}/{2}", Constants.Protocal, Constants.Url, Constants.Path));
             EndpointAddress ServiceAddress = new EndpointAddress(string.Format("{0}/{1}", ServiceUri.OriginalString, Constants.Address));
-            var channel = ChannelFactory<ICalculator>.CreateChannel(new NetTcpBinding(), ServiceAddress);
+            var factory = new ChannelFactory<ICalculator>(binding, ServiceAddress);
+            var channel = factory.CreateChannel();
 
             try
             {
