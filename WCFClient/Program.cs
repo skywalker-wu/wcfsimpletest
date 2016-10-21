@@ -12,53 +12,67 @@ namespace WCFClient
 {
     class Program
     {
+        static DuplexChannelFactory<IHostService> _factory;
+        static IHostService _channel;
+        static Guid _id = Guid.NewGuid();
+
         static void Main(string[] args)
         {
-            while (true)
+            Init();
+            ConsoleKey k;
+            while ((k = Console.ReadKey(true).Key) != ConsoleKey.Q)
             {
-                switch (Console.ReadKey(true).Key)
-                {
-                    case ConsoleKey.A:
-                        Send(_ => _.Add(1, 1));
+                switch (k){
+                    case ConsoleKey.R:
+                        Register();
                         break;
 
-                    case ConsoleKey.D:
-                        Send(_ => _.Divide(6, 2));
-                        break;
-
-                    case ConsoleKey.M:
-                        Send(_ => _.Multiply(2, 2));
-                        break;
-
-                    case ConsoleKey.S:
-                        Send(_ => _.Subtract(1, 1));
-                        break;
-
-                    case ConsoleKey.Q:
-                        Console.WriteLine("Goodbye.");
+                    case ConsoleKey.U:
+                        UnRegister();
+                        Console.WriteLine("Bye!");
                         return;
+
+                    default:
+                        Thread.Sleep(1000);
+                        break;
                 }
-                Thread.Sleep(1);
             }
         }
 
-        static double Send(Func<ICalculator, double> func)
+        static void Init()
         {
             var binding = new NetTcpBinding(SecurityMode.Transport);
             Uri ServiceUri = new Uri(string.Format("{0}://{1}/{2}", Constants.Protocal, Constants.Url, Constants.Path));
             EndpointAddress ServiceAddress = new EndpointAddress(string.Format("{0}/{1}", ServiceUri.OriginalString, Constants.Address));
-            var factory = new ChannelFactory<ICalculator>(binding, ServiceAddress);
-            var channel = factory.CreateChannel();
+            var callback = new Callback();
+            _factory = new DuplexChannelFactory<IHostService>(new InstanceContext(callback), binding, ServiceAddress);
+            _channel = _factory.CreateChannel();
+            callback.Channel = _channel;
+        }
 
-            try
-            {
-                (channel as IChannel).Open();
-                return func(channel);
-            }
-            finally
-            {
-                (channel as IChannel).Close();
-            }
+        static void Register()
+        {
+            _channel.Subscribe();
+            Console.WriteLine("subscribe succeed");
+        }
+
+        static void UnRegister()
+        {
+            _channel.UnSubscribe();
+            Console.WriteLine("unsubscribe succeed");
+        }
+    }
+
+    public class Callback : ICallback
+    {
+        public IHostService Channel { set; get; }
+        public bool Notificate(int number)
+        {
+            Console.WriteLine(number);
+
+            Task.Run(() => Console.WriteLine(Channel.GetProperty()));
+
+            return true;
         }
     }
 }

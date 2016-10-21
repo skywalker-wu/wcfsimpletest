@@ -8,17 +8,22 @@ using System.Threading.Tasks;
 
 namespace WCFTest
 {
+    [ServiceContract(Namespace = "http://example.com/Command", CallbackContract = typeof(ICallback), SessionMode=System.ServiceModel.SessionMode.Required)]
+    public interface IHostService
+    {
+        [OperationContract(IsTerminating = true)]
+        void UnSubscribe();
+        [OperationContract(IsInitiating = true)]
+        void Subscribe();
+        [OperationContract]
+        string GetProperty();
+    }
+
     [ServiceContract(Namespace = "http://example.com/Command")]
-    public interface ICalculator
+    public interface ICallback
     {
         [OperationContract]
-        double Add(double n1, double n2);
-        [OperationContract]
-        double Subtract(double n1, double n2);
-        [OperationContract]
-        double Multiply(double n1, double n2);
-        [OperationContract]
-        double Divide(double n1, double n2);
+        bool Notificate(int number);
     }
 
     public static class Constants

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,10 +14,10 @@ namespace WCFServer
     {
         static void Main(string[] args)
         {
-            using (ServiceHost host = new ServiceHost(typeof(CalculatorService), new Uri(string.Format("{0}://{1}/{2}", Constants.Protocal, Constants.Url, Constants.Path))))
+            using (ServiceHost host = new ServiceHost(typeof(HostService), new Uri(string.Format("{0}://{1}/{2}", Constants.Protocal, Constants.Url, Constants.Path))))
             {
                 var binding = new NetTcpBinding();
-                host.AddServiceEndpoint(typeof(ICalculator), binding, Constants.Address);
+                host.AddServiceEndpoint(typeof(IHostService), binding, Constants.Address);
                 host.Open();
                 foreach (var serviceEndpoint in host.Description.Endpoints)
                 {
@@ -29,7 +30,13 @@ namespace WCFServer
                 ConsoleKey k;
                 while ((k = Console.ReadKey(true).Key) != ConsoleKey.Q)
                 {
-                    Thread.Sleep(1);
+                    foreach (var item in HostService.CallbackDictionary)
+                    {
+                        var result = item.Value.Notificate(123);
+                        Console.WriteLine("{0}:{1}", item.Key, result);
+                    }
+
+                    Thread.Sleep(100);
                 }
             }
 
@@ -37,45 +44,51 @@ namespace WCFServer
         }
     }
 
-    
 
-    [ServiceBehavior(IncludeExceptionDetailInFaults = true)]
-    public partial class CalculatorService : ICalculator
+
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerSession)]
+    public class HostService : IHostService
     {
+        public static Dictionary<string, ICallback> CallbackDictionary = new Dictionary<string, ICallback>();
 
-        public double Add(double n1, double n2)
+        private ICallback _callBack;
+        private string _id;
+
+        public string GetProperty()
         {
-            double result = n1 + n2;
-            Console.WriteLine("Received Add({0},{1})", n1, n2);
-            Console.WriteLine("Return: {0}", result);
-            return result;
+            return OperationContext.Current.SessionId;
         }
 
-
-        public double Subtract(double n1, double n2)
+        public void UnSubscribe()
         {
-            double result = n1 - n2;
-            Console.WriteLine("Received Subtract({0},{1})", n1, n2);
-            Console.WriteLine("Return: {0}", result);
-            return result;
+            if (!CallbackDictionary.ContainsKey(_id))
+            {
+                return;
+            }
+
+            CallbackDictionary.Remove(_id);
+
+            Console.WriteLine("UnSubscribe {0}", _id);
+            // Dispose callback
         }
 
-
-        public double Multiply(double n1, double n2)
+        public void Subscribe()
         {
-            double result = n1 * n2;
-            Console.WriteLine("Received Multiply({0},{1})", n1, n2);
-            Console.WriteLine("Return: {0}", result);
-            return result;
-        }
+            _id = OperationContext.Current.SessionId;
+            _callBack = OperationContext.Current.GetCallbackChannel<ICallback>();
 
+            CallbackDictionary[_id] = _callBack;
+            ((IChannel)_callBack).Closed += (sender, args) =>
+            {
+                UnSubscribe();
+            };
 
-        public double Divide(double n1, double n2)
-        {
-            double result = n1 / n2;
-            Console.WriteLine("Received Divide({0},{1})", n1, n2);
-            Console.WriteLine("Return: {0}", result);
-            return result;
+            ((IChannel)_callBack).Faulted += (sender, args) =>
+            {
+                UnSubscribe();
+            };
+
+            Console.WriteLine("subscribe {0}", _id);
         }
     }
 }

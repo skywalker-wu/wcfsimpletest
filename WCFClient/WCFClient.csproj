@@ -44,8 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\WCFServer\ICalculator.cs">
-      <Link>ICalculator.cs</Link>
+    <Compile Include="..\WCFServer\IDuplex.cs">
+      <Link>IDuplex.cs</Link>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
