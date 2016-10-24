@@ -17,7 +17,8 @@ namespace WCFServer
             using (ServiceHost host = new ServiceHost(typeof(HostService), new Uri(string.Format("{0}://{1}/{2}", Constants.Protocal, Constants.Url, Constants.Path))))
             {
                 var binding = new NetTcpBinding();
-                host.AddServiceEndpoint(typeof(IHostService), binding, Constants.Address);
+                var endpoint = host.AddServiceEndpoint(typeof(IHostService), binding, Constants.Address);
+                endpoint.EndpointBehaviors.Add(new ServiceMessageBehavior());
                 host.Open();
                 foreach (var serviceEndpoint in host.Description.Endpoints)
                 {

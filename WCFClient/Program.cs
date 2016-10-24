@@ -46,6 +46,8 @@ namespace WCFClient
             EndpointAddress ServiceAddress = new EndpointAddress(string.Format("{0}/{1}", ServiceUri.OriginalString, Constants.Address));
             var callback = new Callback();
             _factory = new DuplexChannelFactory<IHostService>(new InstanceContext(callback), binding, ServiceAddress);
+            _factory.Endpoint.EndpointBehaviors.Add(new ClientMessageBehavior());
+            
             _channel = _factory.CreateChannel();
             callback.Channel = _channel;
         }
