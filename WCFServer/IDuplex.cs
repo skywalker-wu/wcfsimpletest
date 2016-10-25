@@ -14,7 +14,7 @@ namespace WCFTest
         [OperationContract(IsTerminating = true)]
         void UnSubscribe();
         [OperationContract(IsInitiating = true)]
-        void Subscribe();
+        void Subscribe(int id);
         [OperationContract]
         string GetProperty();
     }
@@ -25,6 +25,7 @@ namespace WCFTest
         [OperationContract]
         bool Notificate(int number);
     }
+
 
     public static class Constants
     {

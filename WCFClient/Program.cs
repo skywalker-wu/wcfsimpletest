@@ -41,20 +41,21 @@ namespace WCFClient
 
         static void Init()
         {
-            var binding = new NetTcpBinding(SecurityMode.Transport);
+            var binding = new NetTcpBinding();
+            binding.Security.Mode = SecurityMode.None;
             Uri ServiceUri = new Uri(string.Format("{0}://{1}/{2}", Constants.Protocal, Constants.Url, Constants.Path));
             EndpointAddress ServiceAddress = new EndpointAddress(string.Format("{0}/{1}", ServiceUri.OriginalString, Constants.Address));
             var callback = new Callback();
             _factory = new DuplexChannelFactory<IHostService>(new InstanceContext(callback), binding, ServiceAddress);
             _factory.Endpoint.EndpointBehaviors.Add(new ClientMessageBehavior());
-            
+
             _channel = _factory.CreateChannel();
             callback.Channel = _channel;
         }
 
         static void Register()
         {
-            _channel.Subscribe();
+            _channel.Subscribe(1);
             Console.WriteLine("subscribe succeed");
         }
 
