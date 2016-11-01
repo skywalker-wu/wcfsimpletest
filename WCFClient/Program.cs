@@ -7,6 +7,7 @@ using System.ServiceModel;
 using System.Threading;
 using WCFTest;
 using System.ServiceModel.Channels;
+using Common;
 
 namespace WCFClient
 {
@@ -41,11 +42,13 @@ namespace WCFClient
 
         static void Init()
         {
-            var binding = new NetTcpBinding(SecurityMode.Transport);
+            var binding = new TcpCustomBinding();
             Uri ServiceUri = new Uri(string.Format("{0}://{1}/{2}", Constants.Protocal, Constants.Url, Constants.Path));
             EndpointAddress ServiceAddress = new EndpointAddress(string.Format("{0}/{1}", ServiceUri.OriginalString, Constants.Address));
             var callback = new Callback();
             _factory = new DuplexChannelFactory<IHostService>(new InstanceContext(callback), binding, ServiceAddress);
+            _factory.Credentials.UserName.UserName = "yaron";
+            _factory.Credentials.UserName.Password = "1234";
             _channel = _factory.CreateChannel();
             callback.Channel = _channel;
         }

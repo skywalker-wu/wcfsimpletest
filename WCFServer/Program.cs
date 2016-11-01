@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
@@ -16,8 +17,11 @@ namespace WCFServer
         {
             using (ServiceHost host = new ServiceHost(typeof(HostService), new Uri(string.Format("{0}://{1}/{2}", Constants.Protocal, Constants.Url, Constants.Path))))
             {
-                var binding = new NetTcpBinding();
-                host.AddServiceEndpoint(typeof(IHostService), binding, Constants.Address);
+                var binding = new TcpCustomBinding();
+                var endpoint = host.AddServiceEndpoint(typeof(IHostService), binding, Constants.Address);
+                host.Credentials.UserNameAuthentication.UserNamePasswordValidationMode = System.ServiceModel.Security.UserNamePasswordValidationMode.Custom;
+                host.Credentials.UserNameAuthentication.CustomUserNamePasswordValidator = new CustomUserNameValidator();
+                endpoint.EndpointBehaviors.Add(new ServiceMessageBehavior());
                 host.Open();
                 foreach (var serviceEndpoint in host.Description.Endpoints)
                 {
@@ -41,6 +45,14 @@ namespace WCFServer
             }
 
             Console.WriteLine("Goodbye.");
+        }
+    }
+
+    public class CustomUserNameValidator : System.IdentityModel.Selectors.UserNamePasswordValidator
+    {
+        public override void Validate(string userName, string password)
+        {
+
         }
     }
 
